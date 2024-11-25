@@ -46,61 +46,72 @@ class _HomeViewState extends ConsumerState<_HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    final initialLoading = ref.watch(initialLoadingProvider);
+
+    if (initialLoading) return const FullScreenLoader();
+
     final nowPlayingMovies = ref.watch(nowPlayingMoviesProvider);
     final popularMovies = ref.watch(popularMoviesProvider);
     final ratedMovies = ref.watch(ratedMoviesProvider);
     final upcomingMovies = ref.watch(upcomingMoviesProvider);
     final slideShowMovies = ref.watch(moviesSlideShowProvider);
 
-    // return FullScreenLoader();
-
-    return CustomScrollView(slivers: [
-      const SliverAppBar(
-        floating: true,
-        flexibleSpace: FlexibleSpaceBar(
-          title: CustomAppbar(),
+    return Visibility(
+      visible: !initialLoading,
+      child: CustomScrollView(slivers: [
+        const SliverAppBar(
+          floating: true,
+          flexibleSpace: FlexibleSpaceBar(
+            centerTitle: true,
+            title: Positioned(
+              top: 0,
+              left: 0,
+              child: CustomAppbar(),
+            ),
+          ),
         ),
-      ),
-      SliverList(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          return Column(
-            children: [
-              MoviesSlideshow(movies: slideShowMovies),
-              MovieHorizontalListview(
-                movies: nowPlayingMovies,
-                title: 'En cines',
-                subTitle: _formattedDate ?? 'Cargando...',
-                loadNextPage: () =>
-                    ref.read(nowPlayingMoviesProvider.notifier).loadNextPage(),
-              ),
-              MovieHorizontalListview(
-                movies: upcomingMovies,
-                title: 'Próximamente',
-                subTitle: 'Este mes',
-                loadNextPage: () =>
-                    ref.read(upcomingMoviesProvider.notifier).loadNextPage(),
-              ),
-              MovieHorizontalListview(
-                movies: popularMovies,
-                title: 'Populares',
-                // subTitle:  'Estemes',
-                loadNextPage: () =>
-                    ref.read(popularMoviesProvider.notifier).loadNextPage(),
-              ),
-              MovieHorizontalListview(
-                movies: ratedMovies,
-                title: 'Mejor calificadas',
-                subTitle: 'Desde siempre',
-                loadNextPage: () =>
-                    ref.read(ratedMoviesProvider.notifier).loadNextPage(),
-              ),
-              const SizedBox(
-                height: 51,
-              )
-            ],
-          );
-        }, childCount: 1),
-      ),
-    ]);
+        SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            return Column(
+              children: [
+                MoviesSlideshow(movies: slideShowMovies),
+                MovieHorizontalListview(
+                  movies: nowPlayingMovies,
+                  title: 'En cines',
+                  subTitle: _formattedDate ?? 'Cargando...',
+                  loadNextPage: () => ref
+                      .read(nowPlayingMoviesProvider.notifier)
+                      .loadNextPage(),
+                ),
+                MovieHorizontalListview(
+                  movies: upcomingMovies,
+                  title: 'Próximamente',
+                  subTitle: 'Este mes',
+                  loadNextPage: () =>
+                      ref.read(upcomingMoviesProvider.notifier).loadNextPage(),
+                ),
+                MovieHorizontalListview(
+                  movies: popularMovies,
+                  title: 'Populares',
+                  // subTitle:  'Estemes',
+                  loadNextPage: () =>
+                      ref.read(popularMoviesProvider.notifier).loadNextPage(),
+                ),
+                MovieHorizontalListview(
+                  movies: ratedMovies,
+                  title: 'Mejor calificadas',
+                  subTitle: 'Desde siempre',
+                  loadNextPage: () =>
+                      ref.read(ratedMoviesProvider.notifier).loadNextPage(),
+                ),
+                const SizedBox(
+                  height: 51,
+                )
+              ],
+            );
+          }, childCount: 1),
+        ),
+      ]),
+    );
   }
 }
