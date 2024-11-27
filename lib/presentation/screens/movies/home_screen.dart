@@ -1,5 +1,5 @@
-import 'package:cinemapedia/presentation/providers/providers.dart';
-import 'package:cinemapedia/presentation/widgets/widgets.dart';
+import 'package:cinemapedia/presentation/providers/providers_barrel.dart';
+import 'package:cinemapedia/presentation/widgets/widgets_barrel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
