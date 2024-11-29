@@ -15,11 +15,27 @@ class MovieScreen extends ConsumerStatefulWidget {
 }
 
 class MovieScreenState extends ConsumerState<MovieScreen> {
+  late ScrollController _scrollController;
+  bool _showBanner = true;
   @override
   void initState() {
     super.initState();
     ref.read(movieInfoProvider.notifier).loadMovie(widget.movieId);
     ref.read(actorByMovieProvider.notifier).loadActors(widget.movieId);
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 50 && _showBanner) {
+        setState(() {
+          _showBanner = false;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -36,20 +52,54 @@ class MovieScreenState extends ConsumerState<MovieScreen> {
     }
 
     return Scaffold(
-      body: CustomScrollView(
-        physics: const ClampingScrollPhysics(),
-        slivers: [
-          _CustomSliverAppBar(
-            movie: movie,
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => _MovieDetails(movie: movie),
-              childCount: 1,
+      body: Stack(children: [
+        CustomScrollView(
+          controller: _scrollController,
+          physics: const ClampingScrollPhysics(),
+          slivers: [
+            _CustomSliverAppBar(
+              movie: movie,
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _MovieDetails(movie: movie),
+                childCount: 1,
+              ),
+            )
+          ],
+        ),
+        if (_showBanner)
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: FadeIn(
+              child: Container(
+                padding:
+                const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Desliza hacia arriba',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Icon(
+                      Icons.arrow_upward_outlined,
+                      color: Colors.white,
+                    )
+                  ],
+                ),
+              ),
             ),
           )
-        ],
-      ),
+      ]),
     );
   }
 }
