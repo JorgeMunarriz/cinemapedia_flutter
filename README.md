@@ -3,4 +3,7 @@
 ## Dev
 
 1. Copiar el .env.template y renombrarlo a .env
-1. Cambiar las variables de entorno (The MovieDB)
+2. Cambiar las variables de entorno (The MovieDB)
+3. Cambios en la entidad, hay que ejecutar
+
+`flutter pub run build_runner build`
