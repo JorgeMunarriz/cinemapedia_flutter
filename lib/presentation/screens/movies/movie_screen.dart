@@ -76,7 +76,7 @@ class MovieScreenState extends ConsumerState<MovieScreen> {
             child: FadeIn(
               child: Container(
                 padding:
-                const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(10),
@@ -234,61 +234,175 @@ class _ActorsByMovie extends ConsumerWidget {
   }
 }
 
-class _CustomSliverAppBar extends StatelessWidget {
+final isFavoriteProvider =
+    FutureProvider.family.autoDispose((ref, int movieId) {
+  final localStorageRepository = ref.watch(localStorageRepositoryProvider);
+
+  return localStorageRepository.isMovieFavorite(movieId);
+});
+
+class _CustomSliverAppBar extends ConsumerStatefulWidget {
   final Movie movie;
   const _CustomSliverAppBar({required this.movie});
+  @override
+  ConsumerState<_CustomSliverAppBar> createState() =>
+      _CustomSliverAppBarState();
+}
+
+class _CustomSliverAppBarState extends ConsumerState<_CustomSliverAppBar> {
+  bool _showConfirmation = false;
+  String _confirmationText = '';
+
+  void _toggleFavorite() async {
+    final localStorageRepository = ref.watch(localStorageRepositoryProvider);
+    final isCurrentlyFavorite =
+        await localStorageRepository.isMovieFavorite(widget.movie.id);
+
+    await localStorageRepository.toggleFavorite(widget.movie);
+
+    ref.invalidate(isFavoriteProvider(widget.movie.id));
+
+    setState(() {
+      _confirmationText = isCurrentlyFavorite
+          ? 'La película se ha eliminado de favoritos'
+          : 'La película se añadió correctamente a favoritos';
+      _showConfirmation = true;
+    });
+
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _showConfirmation = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final AsyncValue<bool> isFavoriteFuture =
+        ref.watch(isFavoriteProvider(widget.movie.id));
+
     return SliverAppBar(
       backgroundColor: Colors.black,
       expandedHeight: size.height,
       foregroundColor: Colors.white,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        background: Stack(
-          children: [
-            SizedBox.expand(
-              child: Image.network(
-                movie.posterPath,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress != null) return const SizedBox();
-                  return FadeIn(child: child);
-                },
-              ),
+      actions: [
+        IconButton(
+          onPressed: _toggleFavorite,
+          icon: isFavoriteFuture.when(
+            data: (isFavorite) => isFavorite
+                ? const Icon(Icons.favorite_rounded, color: Colors.red)
+                : const Icon(Icons.favorite_border),
+            error: (_, __) => const Icon(Icons.error, color: Colors.red),
+            loading: () => const CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ],
+      flexibleSpace: Stack(
+        children: [
+          FlexibleSpaceBar(
+            titlePadding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            background: Stack(
+              children: [
+                SizedBox.expand(
+                  child: Image.network(
+                    widget.movie.posterPath,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress != null) return const SizedBox();
+                      return FadeIn(child: child);
+                    },
+                  ),
+                ),
+                const _CustomGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  stops: [0.0, 0.2],
+                  colors: [Colors.black54, Colors.transparent],
+                ),
+                const _CustomGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: [0.8, 1.0],
+                  colors: [Colors.transparent, Colors.black54],
+                ),
+                const _CustomGradient(
+                  begin: Alignment.topLeft,
+                  stops: [0.0, 0.5],
+                  colors: [Colors.black87, Colors.transparent],
+                ),
+              ],
             ),
-            const SizedBox.expand(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    stops: [0.7, 1.0],
-                    colors: [
-                      Colors.transparent,
-                      Colors.black87,
+          ),
+          if (_showConfirmation)
+            Positioned(
+              top: 40,
+              left: 40,
+              right: 40,
+              child: FadeIn(
+                animate: true,
+                curve: Curves.bounceInOut,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _confirmationText,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.green,
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
-            const SizedBox.expand(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    stops: [0.0, 0.5],
-                    colors: [
-                      Colors.black87,
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            )
-          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomGradient extends StatelessWidget {
+  final AlignmentGeometry begin;
+  final AlignmentGeometry end;
+  final List<double>? stops;
+  final List<Color> colors;
+
+  const _CustomGradient(
+      {required this.begin,
+      this.end = Alignment.centerRight,
+      required this.stops,
+      required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.expand(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: begin,
+            end: end,
+            stops: stops,
+            colors: colors,
+          ),
         ),
       ),
     );

@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'package:cinemapedia/config/constants/environment.dart';
 import 'package:cinemapedia/domain/domain_barrel.dart';
