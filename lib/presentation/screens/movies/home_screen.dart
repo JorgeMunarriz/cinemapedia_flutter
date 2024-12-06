@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 const viewRoutes = <Widget>[
   HomeView(),
-  CategoriesViews(),
+  PopularView(),
   FavoritesView(),
 ];
 
@@ -20,21 +20,21 @@ class HomeScreen extends StatefulWidget {
   });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  late final PageController _pageController;
+class HomeScreenState extends State<HomeScreen> {
+  late final PageController pageController;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: widget.pageIndex);
+    pageController = PageController(initialPage: widget.pageIndex);
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    pageController.dispose();
     super.dispose();
   }
 
@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onBottomNavTapped(int index) {
-    _pageController.animateToPage(index,
+    pageController.animateToPage(index,
         duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
 
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView(
-        controller: _pageController,
+        controller: pageController,
         onPageChanged: onPageChanged,
         children: viewRoutes,
       ),

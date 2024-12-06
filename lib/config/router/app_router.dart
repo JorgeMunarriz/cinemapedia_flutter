@@ -27,6 +27,13 @@ final appRouter = GoRouter(
               );
             },
           ),
+          GoRoute(
+            path: '/themes',
+            name: ThemesScreen.name,
+            builder: (context, state) {
+              return const ThemesScreen();
+            },
+          ),
         ]),
     GoRoute(
       path: '/',
