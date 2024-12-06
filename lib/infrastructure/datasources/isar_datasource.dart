@@ -9,6 +9,7 @@ class IsarDatasource extends LocalStorageDatasource {
   IsarDatasource() {
     db = openDB();
   }
+
   Future<Isar> openDB() async {
     final dir = await getApplicationCacheDirectory();
 
@@ -34,11 +35,16 @@ class IsarDatasource extends LocalStorageDatasource {
     final isar = await db;
     final favoriteMovie =
         await isar.movies.filter().idEqualTo(movie.id).findFirst();
-    if (favoriteMovie != null) {
-      isar.writeTxnSync(() => isar.movies.deleteSync(favoriteMovie.isarId!));
-      return;
-    }
-    isar.writeTxnSync(() => isar.movies.putSync(movie));
+
+    await isar.writeTxn(() async {
+      if (favoriteMovie != null) {
+        // Si la película está en favoritos, la eliminamos
+        await isar.movies.delete(favoriteMovie.isarId!);
+      } else {
+        // Si la película no está en favoritos, la agregamos
+        await isar.movies.put(movie);
+      }
+    });
   }
 
   @override

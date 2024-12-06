@@ -251,31 +251,72 @@ class _CustomSliverAppBar extends ConsumerStatefulWidget {
 
 class _CustomSliverAppBarState extends ConsumerState<_CustomSliverAppBar> {
   bool _showConfirmation = false;
-  String _confirmationText = '';
+  late Widget confirmationWidget;
+  bool isError = false;
 
+  //   });
+  // }
   void _toggleFavorite() async {
-    final localStorageRepository = ref.watch(localStorageRepositoryProvider);
-    final isCurrentlyFavorite =
-        await localStorageRepository.isMovieFavorite(widget.movie.id);
+    if (!mounted) return;
 
-    await localStorageRepository.toggleFavorite(widget.movie);
+    final localStorageRepository = ref.read(localStorageRepositoryProvider);
 
-    ref.invalidate(isFavoriteProvider(widget.movie.id));
+    // Inicializa la variable isCurrentlyFavorite como null en caso de error
 
-    setState(() {
-      _confirmationText = isCurrentlyFavorite
-          ? 'La película se ha eliminado de favoritos'
-          : 'La película se añadió correctamente a favoritos';
-      _showConfirmation = true;
-    });
+    try {
+      // Verifica si la película es favorita antes de cambiar el estado
+      final isCurrentlyFavorite =
+          await localStorageRepository.isMovieFavorite(widget.movie.id);
 
-    Future.delayed(const Duration(seconds: 3), () {
+      // Cambiar el estado de favorito
+      await ref
+          .read(favoriteMoviesProvider.notifier)
+          .toggleFavorite(widget.movie);
+
+      // Aquí es donde refrescamos el estado favorito
+      ref.invalidate(isFavoriteProvider(widget.movie.id));
+
+      // Si todo va bien, no hay error
       if (mounted) {
         setState(() {
-          _showConfirmation = false;
+          confirmationWidget =
+              _getFavoriteStatusTextAndIcon(isCurrentlyFavorite, false);
+          _showConfirmation = true;
         });
       }
-    });
+
+      // Ocultar el mensaje después de 3 segundos
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(
+            () {
+              _showConfirmation = false;
+            },
+          );
+        }
+      });
+    } catch (e) {
+      // Si ocurre un error, cambia el estado de isError a true
+      if (mounted) {
+        setState(
+          () {
+            isError = true;
+            confirmationWidget = _getFavoriteStatusTextAndIcon(
+                null, true); // El estado es un error
+            _showConfirmation = true;
+          },
+        );
+      }
+
+      // Ocultar el mensaje después de 3 segundos
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _showConfirmation = false;
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -342,34 +383,22 @@ class _CustomSliverAppBarState extends ConsumerState<_CustomSliverAppBar> {
               top: 40,
               left: 40,
               right: 40,
-              child: FadeIn(
+              child: FadeInUp(
                 animate: true,
-                curve: Curves.bounceInOut,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _confirmationText,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      const Icon(
-                        Icons.check_circle_rounded,
-                        color: Colors.green,
-                      ),
-                    ],
+                duration: const Duration(milliseconds: 1200),
+                child: Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 20),
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: confirmationWidget,
                   ),
                 ),
               ),
@@ -380,17 +409,58 @@ class _CustomSliverAppBarState extends ConsumerState<_CustomSliverAppBar> {
   }
 }
 
+// Función que maneja el estado favorito o error, devolviendo el texto y el icono adecuados
+Widget _getFavoriteStatusTextAndIcon(bool? isCurrentlyFavorite, bool isError) {
+  String confirmationText;
+  Icon icon;
+
+  if (isError) {
+    confirmationText = 'Hubo un error al cambiar el estado de favorito';
+    icon = const Icon(
+      Icons.error_outline,
+      color: Colors.red,
+    );
+  } else if (isCurrentlyFavorite != null && isCurrentlyFavorite) {
+    confirmationText = 'La película se ha eliminado de favoritos';
+    icon = const Icon(
+      Icons.remove_circle_rounded,
+      color: Colors.red,
+    );
+  } else {
+    confirmationText = 'La película se añadió correctamente a favoritos';
+    icon = const Icon(
+      Icons.check_circle_rounded,
+      color: Colors.green,
+    );
+  }
+
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Text(
+        confirmationText,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white),
+      ),
+      const SizedBox(width: 10),
+      icon,
+    ],
+  );
+}
+
 class _CustomGradient extends StatelessWidget {
   final AlignmentGeometry begin;
   final AlignmentGeometry end;
   final List<double>? stops;
   final List<Color> colors;
 
-  const _CustomGradient(
-      {required this.begin,
-      this.end = Alignment.centerRight,
-      required this.stops,
-      required this.colors});
+  const _CustomGradient({
+    required this.begin,
+    this.end = Alignment.centerRight,
+    required this.stops,
+    required this.colors,
+  });
 
   @override
   Widget build(BuildContext context) {
