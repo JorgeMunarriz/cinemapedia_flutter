@@ -1,5 +1,4 @@
-import 'package:cinemapedia/domain/datasource/local_storage_datasource.dart';
-import 'package:cinemapedia/domain/entities/movie.dart';
+import 'package:cinemapedia/domain/domain_barrel.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -14,8 +13,11 @@ class IsarDatasource extends LocalStorageDatasource {
     final dir = await getApplicationCacheDirectory();
 
     if (Isar.instanceNames.isEmpty) {
-      return await Isar.open([MovieSchema],
-          inspector: true, directory: dir.path);
+      return await Isar.open(
+        [MovieSchema, TvSerieSchema], // Incluye TvSerieSchema
+        inspector: true,
+        directory: dir.path,
+      );
     }
     return Future.value(Isar.getInstance());
   }
@@ -28,6 +30,16 @@ class IsarDatasource extends LocalStorageDatasource {
         await isar.movies.filter().idEqualTo(movieId).findFirst();
 
     return isFavoriteMovie != null;
+  }
+
+  @override
+  Future<bool> isTvSerieFavorite(int serieId) async {
+    final isar = await db;
+
+    final TvSerie? isFavoriteTvSerie =
+        await isar.tvSeries.filter().idEqualTo(serieId).findFirst();
+
+    return isFavoriteTvSerie != null;
   }
 
   @override
@@ -48,8 +60,32 @@ class IsarDatasource extends LocalStorageDatasource {
   }
 
   @override
+  Future<void> toggleFavoriteTvSerie(TvSerie tvSerie) async {
+    final isar = await db;
+    final favoriteTvSerie =
+        await isar.tvSeries.filter().idEqualTo(tvSerie.id).findFirst();
+
+    await isar.writeTxn(() async {
+      if (favoriteTvSerie != null) {
+        // Si la serie está en favoritos, la eliminamos
+        await isar.tvSeries.delete(favoriteTvSerie.isarId!);
+      } else {
+        // Si la serie no está en favoritos, la agregamos
+        await isar.tvSeries.put(tvSerie);
+      }
+    });
+  }
+
+  @override
   Future<List<Movie>> loadMovies({int limit = 10, offset = 0}) async {
     final isar = await db;
     return isar.movies.where().offset(offset).limit(limit).findAll();
   }
+
+  @override
+  Future<List<TvSerie>> loadTvSeries({int limit = 10, offset = 0}) async {
+    final isar = await db;
+    return isar.tvSeries.where().offset(offset).limit(limit).findAll();
+  }
+
 }

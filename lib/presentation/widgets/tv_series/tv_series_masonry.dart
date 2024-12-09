@@ -1,28 +1,29 @@
+import 'package:cinemapedia/domain/domain_barrel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:cinemapedia/presentation/presentation_barrel.dart';
-import 'package:cinemapedia/domain/domain_barrel.dart';
 
-class MoviesMasonry extends ConsumerStatefulWidget {
-  final List<Movie> movies;
+
+class TvSeriesMasonry extends ConsumerStatefulWidget {
+  final List<TvSerie> tvSeries;
   final VoidCallback? loadNextPage;
-  const MoviesMasonry({
+  const TvSeriesMasonry({
     super.key,
-    required this.movies,
+    required this.tvSeries,
     this.loadNextPage,
   });
 
   @override
-  MoviesMasonryState createState() => MoviesMasonryState();
+  TvSeriesMasonryState createState() => TvSeriesMasonryState();
 }
 
-class MoviesMasonryState extends ConsumerState<MoviesMasonry> {
+class TvSeriesMasonryState extends ConsumerState<TvSeriesMasonry> {
   late ScrollController _scrollController;
   @override
   void initState() {
     super.initState();
-    ref.read(favoriteMoviesAndSeriesProvider.notifier).loadNextPage();
+    ref.read(favoriteMoviesAndSeriesProvider.notifier).loadNextPageTvSeries();
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (widget.loadNextPage == null) return;
@@ -48,7 +49,7 @@ class MoviesMasonryState extends ConsumerState<MoviesMasonry> {
         crossAxisCount: 3,
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
-        itemCount: widget.movies.length,
+        itemCount: widget.tvSeries.length,
         itemBuilder: (context, index) {
           if (index == 1) {
             return Column(
@@ -56,11 +57,11 @@ class MoviesMasonryState extends ConsumerState<MoviesMasonry> {
                 const SizedBox(
                   height: 40,
                 ),
-                MoviePosterLink(movie: widget.movies[index]),
+                TvSeriePosterlink(tvSerie: widget.tvSeries[index]),
               ],
             );
           }
-          return MoviePosterLink(movie: widget.movies[index]);
+          return TvSeriePosterlink(tvSerie: widget.tvSeries[index]);
         },
       ),
     );

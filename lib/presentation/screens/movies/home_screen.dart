@@ -8,6 +8,7 @@ const viewRoutes = <Widget>[
   HomeView(),
   PopularView(),
   FavoritesView(),
+  FavoritesTvSeriesView(),
 ];
 
 class HomeScreen extends StatefulWidget {

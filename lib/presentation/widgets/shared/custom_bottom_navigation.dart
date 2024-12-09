@@ -10,26 +10,34 @@ class CustomBottomNavigation extends StatelessWidget {
     required this.onTap,
   });
 
-
-
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       elevation: 0,
-      items: const [
+      backgroundColor: colors.primary,
+      items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home_max),
           label: 'Inicio',
+          backgroundColor: colors.primary,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.label_outline),
-          label: 'Categorías',
+          icon: Icon(Icons.movie_filter_outlined),
+          label: 'Series',
+          backgroundColor: colors.secondary,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.favorite_outline),
-          label: 'Favoritos',
+          label: 'Películas',
+          backgroundColor: colors.tertiary,
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.favorite_outline),
+          label: 'Series',
+          backgroundColor: colors.primary,
         ),
       ],
     );

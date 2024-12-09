@@ -1,3 +1,5 @@
+
+import 'package:cinemapedia/presentation/widgets/tv_series/horizontal_tv_series_list_views.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -21,9 +23,9 @@ class HomeViewState extends ConsumerState<HomeView>
     super.initState();
     initializeDateFormatting('es_ES').then((_) {
       setState(() {
-        final DateTime tomorrow = DateTime.now().add(const Duration(days: 1));
+        final DateTime today = DateTime.now().add(const Duration(days:0));
         // Formateamos la fecha y convertimos la primera letra a mayúscula.
-        final String rawDate = DateFormat('EEEE d', 'es_ES').format(tomorrow);
+        final String rawDate = DateFormat('EEEE d', 'es_ES').format(today);
         _formattedDate = rawDate[0].toUpperCase() + rawDate.substring(1);
       });
     });
@@ -31,7 +33,15 @@ class HomeViewState extends ConsumerState<HomeView>
     ref.read(upcomingMoviesProvider.notifier).loadNextPage();
     ref.read(popularMoviesProvider.notifier).loadNextPage();
     ref.read(ratedMoviesProvider.notifier).loadNextPage();
+
+    //series
+
+    ref.read(airingTodayProvider.notifier).loadNextPage();
+    ref.read(popularTvSeriesProvider.notifier).loadNextPage();
+    ref.read(ratedTvSeriesProvider.notifier).loadNextPage();
+    ref.read(onTheAirTvSeriesProvider.notifier).loadNextPage();
   }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -47,6 +57,11 @@ class HomeViewState extends ConsumerState<HomeView>
     final ratedMovies = ref.watch(ratedMoviesProvider);
     final upcomingMovies = ref.watch(upcomingMoviesProvider);
     final slideShowMovies = ref.watch(moviesSlideShowProvider);
+
+    final airingTodayTvSeries = ref.watch(airingTodayProvider);
+    final popularTvSeries = ref.watch(popularTvSeriesProvider);
+    final ratedTvSeries = ref.watch(ratedTvSeriesProvider);
+    final onAirTvSeries = ref.watch(onTheAirTvSeriesProvider);
 
     return Visibility(
       visible: !initialLoading,
@@ -68,12 +83,12 @@ class HomeViewState extends ConsumerState<HomeView>
               children: [
                 MoviesSlideshow(movies: slideShowMovies),
                 MovieHorizontalListview(
-                  movies: nowPlayingMovies,
                   title: 'En cines',
                   subTitle: _formattedDate ?? 'Cargando...',
                   loadNextPage: () => ref
                       .read(nowPlayingMoviesProvider.notifier)
                       .loadNextPage(),
+                  movies: nowPlayingMovies,
                 ),
                 MovieHorizontalListview(
                   movies: upcomingMovies,
@@ -85,7 +100,7 @@ class HomeViewState extends ConsumerState<HomeView>
                 MovieHorizontalListview(
                   movies: popularMovies,
                   title: 'Populares',
-                  // subTitle:  'Estemes',
+                  subTitle: 'Estemes',
                   loadNextPage: () =>
                       ref.read(popularMoviesProvider.notifier).loadNextPage(),
                 ),
@@ -96,9 +111,40 @@ class HomeViewState extends ConsumerState<HomeView>
                   loadNextPage: () =>
                       ref.read(ratedMoviesProvider.notifier).loadNextPage(),
                 ),
-                const SizedBox(
-                  height: 51,
-                )
+                Container(
+                  alignment: Alignment.topLeft,
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                  child: Text('Series de tv'),
+                ),
+                TvSeriesHorizontalListViews(
+                  tvSeries: airingTodayTvSeries,
+                  title: 'Top series del momento',
+                  subTitle: _formattedDate ?? 'Cargando...',
+                  loadNextPage: () => ref
+                      .read(nowPlayingMoviesProvider.notifier)
+                      .loadNextPage(),
+                ),
+                TvSeriesHorizontalListViews(
+                  title: 'Emitiendo',
+                  subTitle: 'Continuan emitiendo ',
+                  tvSeries: onAirTvSeries,
+                  loadNextPage: () =>
+                      ref.read(upcomingMoviesProvider.notifier).loadNextPage(),
+                ),
+                TvSeriesHorizontalListViews(
+                  tvSeries: popularTvSeries,
+                  title: 'Populares',
+                  subTitle: 'Estemes',
+                  loadNextPage: () =>
+                      ref.read(popularMoviesProvider.notifier).loadNextPage(),
+                ),
+                TvSeriesHorizontalListViews(
+                  tvSeries: ratedTvSeries,
+                  title: 'Mejor calificadas',
+                  subTitle: 'Desde siempre',
+                  loadNextPage: () =>
+                      ref.read(ratedMoviesProvider.notifier).loadNextPage(),
+                ),
               ],
             );
           }, childCount: 1),
@@ -106,6 +152,4 @@ class HomeViewState extends ConsumerState<HomeView>
       ]),
     );
   }
-
-  
 }

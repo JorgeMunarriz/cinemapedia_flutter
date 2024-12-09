@@ -1,17 +1,17 @@
-import 'package:cinemapedia/domain/domain_barrel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cinemapedia/domain/domain_barrel.dart';
 import 'package:cinemapedia/presentation/presentation_barrel.dart';
 
-class FavoritesView extends ConsumerStatefulWidget {
-  static const name = 'favorites-views';
-  const FavoritesView({super.key});
+class FavoritesTvSeriesView extends ConsumerStatefulWidget {
+  static const name = 'favorites-tv-series-views';
+  const FavoritesTvSeriesView({super.key});
 
   @override
-  FavoritesViewState createState() => FavoritesViewState();
+  FavoritesTvSeriesViewState createState() => FavoritesTvSeriesViewState();
 }
 
-class FavoritesViewState extends ConsumerState<FavoritesView>
+class FavoritesTvSeriesViewState extends ConsumerState<FavoritesTvSeriesView>
     with AutomaticKeepAliveClientMixin {
   bool isLastPage = false;
   bool isLoading = false;
@@ -23,7 +23,7 @@ class FavoritesViewState extends ConsumerState<FavoritesView>
   @override
   void initState() {
     super.initState();
-    loadNextPage();
+    loadNextPageTvSeries();
   }
 
   @override
@@ -32,19 +32,20 @@ class FavoritesViewState extends ConsumerState<FavoritesView>
     super.dispose();
   }
 
-  void loadNextPage() async {
+  void loadNextPageTvSeries() async {
     // Asegúrate de que el widget esté montado antes de realizar cualquier acción.
     if (isLoading || isLastPage || _isDisposed) return;
 
     isLoading = true;
 
     // Verificar si el widget sigue montado antes de llamar a setState.
-    final movies =
-        await ref.read(favoriteMoviesAndSeriesProvider.notifier).loadNextPage();
+    final tvSeries = await ref
+        .read(favoriteMoviesAndSeriesProvider.notifier)
+        .loadNextPageTvSeries();
     if (_isDisposed) return;
 
     isLoading = false;
-    if (movies.isEmpty) {
+    if (tvSeries.isEmpty) {
       isLastPage = true;
     }
 
@@ -58,13 +59,13 @@ class FavoritesViewState extends ConsumerState<FavoritesView>
     super.build(context); // Llamar a super.build para que funcione el mixin
 
     final favoritesItems = ref.watch(favoriteMoviesAndSeriesProvider).values;
-    final favoritesMovies = favoritesItems
-        .where((item) => item.type == 'movie')
-        .map((item) => item.data as Movie)
+    final favoritesTvSeries = favoritesItems
+        .where((item) => item.type == 'serie')
+        .map((item) => item.data as TvSerie)
         .toList();
     final colors = Theme.of(context).colorScheme;
 
-    if (favoritesMovies.isEmpty) {
+    if (favoritesTvSeries.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -79,7 +80,7 @@ class FavoritesViewState extends ConsumerState<FavoritesView>
               style: TextStyle(fontSize: 30, color: colors.primary),
             ),
             const Text(
-              'No tienes películas favoritas',
+              'No tienes series favoritas',
               style: TextStyle(fontSize: 20, color: Colors.black45),
             ),
             const SizedBox(
@@ -91,7 +92,7 @@ class FavoritesViewState extends ConsumerState<FavoritesView>
                     .findAncestorStateOfType<HomeScreenState>()
                     ?.pageController;
                 pageControllerContext?.animateToPage(
-                  0,
+                  1,
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                 );
@@ -105,11 +106,11 @@ class FavoritesViewState extends ConsumerState<FavoritesView>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Películas favoritas'),
+        title: const Text('Series favoritas'),
       ),
-      body: MoviesMasonry(
-        loadNextPage: loadNextPage,
-        movies: favoritesMovies,
+      body: TvSeriesMasonry(
+        loadNextPage: loadNextPageTvSeries,
+        tvSeries: favoritesTvSeries,
       ),
     );
   }

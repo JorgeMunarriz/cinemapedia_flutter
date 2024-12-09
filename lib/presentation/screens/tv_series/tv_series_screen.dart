@@ -1,27 +1,27 @@
+import 'package:cinemapedia/domain/domain_barrel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:cinemapedia/presentation/providers/providers_barrel.dart';
 
-class MovieScreen extends ConsumerStatefulWidget {
-  static const name = 'movie-screen';
-  final String movieId;
+class TvSerieScreen extends ConsumerStatefulWidget {
+  static const name = 'tv-serie-screen';
+  final String tvSerieId;
 
-  const MovieScreen({super.key, required this.movieId});
+  const TvSerieScreen({super.key, required this.tvSerieId});
 
   @override
-  MovieScreenState createState() => MovieScreenState();
+  TvSerieScreenState createState() => TvSerieScreenState();
 }
 
-class MovieScreenState extends ConsumerState<MovieScreen> {
+class TvSerieScreenState extends ConsumerState<TvSerieScreen> {
   late ScrollController _scrollController;
   bool _showBanner = true;
   @override
   void initState() {
     super.initState();
-    ref.read(movieInfoProvider.notifier).loadMovie(widget.movieId);
-    ref.read(actorByMovieProvider.notifier).loadActors(widget.movieId);
+    ref.read(tvSerieInfoProvider.notifier).loadTvSerie(widget.tvSerieId);
+    // ref.read(actorByMovieProvider.notifier).loadActors(widget.tvSerieId);
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.offset > 50 && _showBanner) {
@@ -40,8 +40,8 @@ class MovieScreenState extends ConsumerState<MovieScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Movie? movie = ref.watch(movieInfoProvider)[widget.movieId];
-    if (movie == null) {
+    final TvSerie? tvSerie = ref.watch(tvSerieInfoProvider)[widget.tvSerieId];
+    if (tvSerie == null) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(
@@ -58,11 +58,11 @@ class MovieScreenState extends ConsumerState<MovieScreen> {
           physics: const ClampingScrollPhysics(),
           slivers: [
             _CustomSliverAppBar(
-              movie: movie,
+              tvSerie: tvSerie,
             ),
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => _MovieDetails(movie: movie),
+                (context, index) => _TvSerieDetails(tvSerie: tvSerie),
                 childCount: 1,
               ),
             )
@@ -104,9 +104,9 @@ class MovieScreenState extends ConsumerState<MovieScreen> {
   }
 }
 
-class _MovieDetails extends StatelessWidget {
-  final Movie movie;
-  const _MovieDetails({required this.movie});
+class _TvSerieDetails extends StatelessWidget {
+  final TvSerie tvSerie;
+  const _TvSerieDetails({required this.tvSerie});
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +124,7 @@ class _MovieDetails extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: Image.network(
-                  movie.posterPath,
+                  tvSerie.posterPath,
                   width: size.width * 0.3,
                 ),
               ),
@@ -137,11 +137,11 @@ class _MovieDetails extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      movie.title,
+                      tvSerie.name,
                       style: textStyles.titleLarge,
                     ),
                     Text(
-                      movie.overview,
+                      tvSerie.overview,
                     ),
                   ],
                 ),
@@ -153,10 +153,10 @@ class _MovieDetails extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           child: Wrap(
             children: [
-              ...movie.genreIds.map((gender) => Container(
+              ...tvSerie.genres.map((genre) => Container(
                     margin: const EdgeInsets.only(right: 10),
                     child: Chip(
-                      label: Text(gender),
+                      label: Text(genre.name),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -165,85 +165,22 @@ class _MovieDetails extends StatelessWidget {
             ],
           ),
         ),
-        _ActorsByMovie(movieId: movie.id.toString()),
-        const SizedBox(
-          height: 50,
-        ),
       ],
     );
   }
 }
 
-class _ActorsByMovie extends ConsumerWidget {
-  final String movieId;
-  const _ActorsByMovie({required this.movieId});
+final isFavoriteTvSeriesProvider =
+    FutureProvider.family.autoDispose((ref, int tvSerieId) {
+  final tvSerieslocalStorageRepository =
+      ref.watch(localStorageRepositoryProvider);
 
-  @override
-  Widget build(BuildContext context, ref) {
-    final actorsByMovie = ref.watch(actorByMovieProvider);
-    if (actorsByMovie[movieId] == null) {
-      return const CircularProgressIndicator(
-        strokeWidth: 2,
-      );
-    }
-    final actors = actorsByMovie[movieId]!;
-
-    return SizedBox(
-      height: 300,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: actors.length,
-        itemBuilder: (context, index) {
-          final actor = actors[index];
-          return Container(
-            padding: const EdgeInsets.all(8.0),
-            width: 135,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FadeInRight(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      actor.profilePath,
-                      height: 180,
-                      width: 135,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 5,
-                ),
-                Text(
-                  actor.name,
-                  maxLines: 2,
-                ),
-                Text(
-                  actor.character ?? '',
-                  maxLines: 2,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-final isFavoriteProvider =
-    FutureProvider.family.autoDispose((ref, int movieId) {
-  final localStorageRepository = ref.watch(localStorageRepositoryProvider);
-
-  return localStorageRepository.isMovieFavorite(movieId);
+  return tvSerieslocalStorageRepository.isTvSerieFavorite(tvSerieId);
 });
 
 class _CustomSliverAppBar extends ConsumerStatefulWidget {
-  final Movie movie;
-  const _CustomSliverAppBar({required this.movie});
+  final TvSerie tvSerie;
+  const _CustomSliverAppBar({required this.tvSerie});
   @override
   ConsumerState<_CustomSliverAppBar> createState() =>
       _CustomSliverAppBarState();
@@ -254,27 +191,25 @@ class _CustomSliverAppBarState extends ConsumerState<_CustomSliverAppBar> {
   late Widget confirmationWidget;
   bool isError = false;
 
-  //   });
-  // }
   void _toggleFavorite() async {
     if (!mounted) return;
 
-    final localStorageRepository = ref.read(localStorageRepositoryProvider);
+    final tvSerieLocalRepository = ref.read(localStorageRepositoryProvider);
 
     // Inicializa la variable isCurrentlyFavorite como null en caso de error
 
     try {
       // Verifica si la película es favorita antes de cambiar el estado
       final isCurrentlyFavorite =
-          await localStorageRepository.isMovieFavorite(widget.movie.id);
+          await tvSerieLocalRepository.isTvSerieFavorite(widget.tvSerie.id);
 
       // Cambiar el estado de favorito
       await ref
           .read(favoriteMoviesAndSeriesProvider.notifier)
-          .toggleFavorite(widget.movie);
+          .toggleFavoriteTvSerie(widget.tvSerie);
 
       // Aquí es donde refrescamos el estado favorito
-      ref.invalidate(isFavoriteProvider(widget.movie.id));
+      ref.invalidate(isFavoriteTvSeriesProvider(widget.tvSerie.id));
 
       // Si todo va bien, no hay error
       if (mounted) {
@@ -323,7 +258,7 @@ class _CustomSliverAppBarState extends ConsumerState<_CustomSliverAppBar> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final AsyncValue<bool> isFavoriteFuture =
-        ref.watch(isFavoriteProvider(widget.movie.id));
+        ref.watch(isFavoriteTvSeriesProvider(widget.tvSerie.id));
 
     return SliverAppBar(
       backgroundColor: Colors.black,
@@ -350,7 +285,7 @@ class _CustomSliverAppBarState extends ConsumerState<_CustomSliverAppBar> {
               children: [
                 SizedBox.expand(
                   child: Image.network(
-                    widget.movie.posterPath,
+                    widget.tvSerie.posterPath,
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress != null) return const SizedBox();
@@ -421,13 +356,13 @@ Widget _getFavoriteStatusTextAndIcon(bool? isCurrentlyFavorite, bool isError) {
       color: Colors.red,
     );
   } else if (isCurrentlyFavorite != null && isCurrentlyFavorite) {
-    confirmationText = 'La película se ha eliminado de favoritos';
+    confirmationText = 'La serie se ha eliminado de favoritos';
     icon = const Icon(
       Icons.remove_circle_rounded,
       color: Colors.red,
     );
   } else {
-    confirmationText = 'La película se añadió correctamente a favoritos';
+    confirmationText = 'La serie se añadió correctamente a favoritos';
     icon = const Icon(
       Icons.check_circle_rounded,
       color: Colors.green,

@@ -1,38 +1,44 @@
+import 'package:cinemapedia/domain/entities/genre.dart';
 import 'package:isar/isar.dart';
-part 'movie.g.dart';
+part 'tvserie.g.dart';
 
 @collection
-class Movie {
+class TvSerie {
   Id? isarId;
   final bool adult;
   final String backdropPath;
-  final List<String> genreIds;
+
+  @ignore
+  final List<GenreTv> genres; // Ignorado por Isar
+
   final int id;
+  final List<String> originCountry;
   final String originalLanguage;
-  final String originalTitle;
+  final String originalName;
   final String overview;
   final double popularity;
   final String posterPath;
-  final DateTime releaseDate;
-  final String title;
-  final bool video;
+  final DateTime firstAirDate;
+  final String name;
   final double voteAverage;
   final int voteCount;
 
-  Movie({
+  TvSerie({
     required this.adult,
     required this.backdropPath,
-    required this.genreIds,
+    this.genres =
+        const [], // Esto solo es parte del constructor, pero no lo maneja Isar
     required this.id,
+    required this.originCountry,
     required this.originalLanguage,
-    required this.originalTitle,
+    required this.originalName,
     required this.overview,
     required this.popularity,
     required this.posterPath,
-    required this.releaseDate,
-    required this.title,
-    required this.video,
+    required this.firstAirDate,
+    required this.name,
     required this.voteAverage,
     required this.voteCount,
   });
 }
+

@@ -50,7 +50,7 @@ class ThemesScreen extends ConsumerWidget {
 
 class ColorPickerDialog extends StatefulWidget {
   final WidgetRef ref;
-  const ColorPickerDialog({required this.ref, Key? key}) : super(key: key);
+  const ColorPickerDialog({required this.ref, super.key});
 
   @override
   State<ColorPickerDialog> createState() => _ColorPickerDialogState();
