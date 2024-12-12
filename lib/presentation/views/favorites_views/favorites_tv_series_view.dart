@@ -33,6 +33,8 @@ class FavoritesTvSeriesViewState extends ConsumerState<FavoritesTvSeriesView>
   }
 
   void loadNextPageTvSeries() async {
+   
+
     // Asegúrate de que el widget esté montado antes de realizar cualquier acción.
     if (isLoading || isLastPage || _isDisposed) return;
 

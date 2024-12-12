@@ -22,7 +22,7 @@ class MoviesMasonryState extends ConsumerState<MoviesMasonry> {
   @override
   void initState() {
     super.initState();
-    ref.read(favoriteMoviesAndSeriesProvider.notifier).loadNextPage();
+
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (widget.loadNextPage == null) return;

@@ -20,10 +20,15 @@ class FavoritesViewState extends ConsumerState<FavoritesView>
   @override
   bool get wantKeepAlive => true;
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  // }
+
   @override
-  void initState() {
-    super.initState();
-    loadNextPage();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    loadNextPage(); // Llama a la carga de datos aquí.
   }
 
   @override
@@ -62,9 +67,10 @@ class FavoritesViewState extends ConsumerState<FavoritesView>
         .where((item) => item.type == 'movie')
         .map((item) => item.data as Movie)
         .toList();
-    final colors = Theme.of(context).colorScheme;
+    
 
     if (favoritesMovies.isEmpty) {
+     
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -72,11 +78,11 @@ class FavoritesViewState extends ConsumerState<FavoritesView>
           children: [
             Icon(
               Icons.favorite_outline_sharp,
-              color: colors.primary,
+              color: Colors.primaries.first,
             ),
             Text(
               'Ohh no!!',
-              style: TextStyle(fontSize: 30, color: colors.primary),
+              style: TextStyle(fontSize: 30, color: Colors.primaries.last),
             ),
             const Text(
               'No tienes películas favoritas',

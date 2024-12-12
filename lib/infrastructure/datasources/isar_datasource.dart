@@ -87,5 +87,4 @@ class IsarDatasource extends LocalStorageDatasource {
     final isar = await db;
     return isar.tvSeries.where().offset(offset).limit(limit).findAll();
   }
-
 }

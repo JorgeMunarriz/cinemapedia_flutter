@@ -29,7 +29,7 @@ class _MoviesSlideshowState extends State<MoviesSlideshow> {
       _isAutoplayActive = false;
       _swiperController.stopAutoplay();
     });
-    _autoplayTimer = Timer(const Duration(seconds: 5), () {
+    _autoplayTimer = Timer(const Duration(milliseconds: 8000), () {
       setState(() {
         _isAutoplayActive = true;
         _swiperController.startAutoplay();
@@ -57,7 +57,11 @@ class _MoviesSlideshowState extends State<MoviesSlideshow> {
             height: 210,
             width: double.infinity,
             child: Swiper(
+              autoplayDelay: 8000,
+              duration: 1500,
               controller: _swiperController,
+              pagination: SwiperPagination(
+                  alignment: Alignment(10, 50), margin: EdgeInsets.all(20)),
               viewportFraction: 0.8,
               scale: 0.9,
               autoplay: _isAutoplayActive,

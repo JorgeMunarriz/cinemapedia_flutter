@@ -1,4 +1,3 @@
-
 import 'package:cinemapedia/presentation/widgets/tv_series/horizontal_tv_series_list_views.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,7 +22,7 @@ class HomeViewState extends ConsumerState<HomeView>
     super.initState();
     initializeDateFormatting('es_ES').then((_) {
       setState(() {
-        final DateTime today = DateTime.now().add(const Duration(days:0));
+        final DateTime today = DateTime.now().add(const Duration(days: 0));
         // Formateamos la fecha y convertimos la primera letra a mayúscula.
         final String rawDate = DateFormat('EEEE d', 'es_ES').format(today);
         _formattedDate = rawDate[0].toUpperCase() + rawDate.substring(1);
@@ -40,6 +39,8 @@ class HomeViewState extends ConsumerState<HomeView>
     ref.read(popularTvSeriesProvider.notifier).loadNextPage();
     ref.read(ratedTvSeriesProvider.notifier).loadNextPage();
     ref.read(onTheAirTvSeriesProvider.notifier).loadNextPage();
+
+    
   }
 
   @override
@@ -62,6 +63,7 @@ class HomeViewState extends ConsumerState<HomeView>
     final popularTvSeries = ref.watch(popularTvSeriesProvider);
     final ratedTvSeries = ref.watch(ratedTvSeriesProvider);
     final onAirTvSeries = ref.watch(onTheAirTvSeriesProvider);
+    final colors = Theme.of(context).colorScheme;
 
     return Visibility(
       visible: !initialLoading,
@@ -111,10 +113,42 @@ class HomeViewState extends ConsumerState<HomeView>
                   loadNextPage: () =>
                       ref.read(ratedMoviesProvider.notifier).loadNextPage(),
                 ),
-                Container(
-                  alignment: Alignment.topLeft,
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                  child: Text('Series de tv'),
+                SizedBox(
+                  height: 40,
+                ),
+                Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Divider(
+                        color: colors.primary,
+                        height: 20,
+                        thickness: 5,
+                        indent: 20,
+                        endIndent: 40,
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                        child: Text(
+                          'Series de tv',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: colors.primary,
+                          ),
+                        ),
+                      ),
+                      Divider(
+                        color: colors.primary,
+                        height: 20,
+                        thickness: 5,
+                        indent: 20,
+                        endIndent: 40,
+                      )
+                    ]),
+                SizedBox(
+                  height: 40,
                 ),
                 TvSeriesHorizontalListViews(
                   tvSeries: airingTodayTvSeries,

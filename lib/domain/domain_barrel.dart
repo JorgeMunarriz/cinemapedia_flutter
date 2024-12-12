@@ -6,8 +6,8 @@ export 'entities/actor.dart';
 export 'entities/movie.dart';
 export 'entities/tvserie.dart';
 export 'entities/genre.dart';
+export 'entities/video.dart';
 export 'repositories/movies_repository.dart';
 export 'repositories/actors_repository.dart';
 export 'repositories/local_storage_repository.dart';
 export 'repositories/tv_series_repository.dart';
-

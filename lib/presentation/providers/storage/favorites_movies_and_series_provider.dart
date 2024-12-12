@@ -1,6 +1,7 @@
 import 'package:cinemapedia/domain/domain_barrel.dart';
 import 'package:cinemapedia/presentation/presentation_barrel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 
 class FavoriteItem {
   final int id;
@@ -10,21 +11,38 @@ class FavoriteItem {
   FavoriteItem({required this.id, required this.type, required this.data});
 }
 
-final favoriteMoviesAndSeriesProvider =
-    StateNotifierProvider<StorageMoviesNotifier, Map<int, FavoriteItem>>((ref) {
+final favoriteMoviesAndSeriesProvider = StateNotifierProvider<
+    StorageMoviesAndSeriesNotifier, Map<int, FavoriteItem>>((ref) {
   final localStorageRepository = ref.watch(localStorageRepositoryProvider);
-  return StorageMoviesNotifier(localStorageRepository: localStorageRepository);
+  return StorageMoviesAndSeriesNotifier(
+      localStorageRepository: localStorageRepository);
 });
 
-class StorageMoviesNotifier extends StateNotifier<Map<int, FavoriteItem>> {
-  int page = 0;
+class StorageMoviesAndSeriesNotifier
+    extends StateNotifier<Map<int, FavoriteItem>> {
+  int moviePage = 0;
+  int tvSeriesPage = 0;
+
   final LocalStorageRepository localStorageRepository;
-  StorageMoviesNotifier({required this.localStorageRepository}) : super({});
+  StorageMoviesAndSeriesNotifier({required this.localStorageRepository})
+      : super({}) {
+    _loadInitialFavorites();
+  }
+   final Logger logger = Logger();
+
+  Future<void> _loadInitialFavorites() async {
+    try {
+      await loadNextPage();
+      await loadNextPageTvSeries();
+    } catch (e) {
+      logger.e('Error al cargar favoritos iniciales: $e');
+    }
+  }
 
   Future<List<Movie>> loadNextPage() async {
-    final movies =
-        await localStorageRepository.loadMovies(offset: page * 10, limit: 20);
-    page++;
+    final movies = await localStorageRepository.loadMovies(
+        offset: moviePage * 10, limit: 20);
+    moviePage++;
     final tempMoviesMap = <int, FavoriteItem>{};
     for (final movie in movies) {
       tempMoviesMap[movie.id] =
@@ -49,9 +67,9 @@ class StorageMoviesNotifier extends StateNotifier<Map<int, FavoriteItem>> {
   }
 
   Future<List<TvSerie>> loadNextPageTvSeries() async {
-    final tvSeries =
-        await localStorageRepository.loadTvSeries(offset: page * 10, limit: 20);
-    page++;
+    final tvSeries = await localStorageRepository.loadTvSeries(
+        offset: tvSeriesPage * 10, limit: 20);
+    tvSeriesPage++;
     final tempTvSeriesMap = <int, FavoriteItem>{};
     for (final tvSeries in tvSeries) {
       tempTvSeriesMap[tvSeries.id] =

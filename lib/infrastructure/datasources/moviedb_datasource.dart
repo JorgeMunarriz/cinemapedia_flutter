@@ -71,4 +71,25 @@ class MoviedbDatasource extends MoviesDatasource {
         await dio.get('/search/movie', queryParameters: {'query': query});
     return _jsonToMovies(response.data);
   }
+  @override
+  Future<List<Movie>> getSimilarMovies(int movieId) async {
+    final response = await dio.get('/movie/$movieId/similar');
+    return _jsonToMovies(response.data);
+  }
+
+    @override
+  Future<List<Video>> getYoutubeVideosById(int movieId) async {
+    final response = await dio.get('/movie/$movieId/videos');
+    final moviedbVideosReponse = MoviedbVideosResponse.fromJson(response.data);
+    final videos = <Video>[];
+
+    for (final videoMoviedb in moviedbVideosReponse.videoResults) {
+      if ( videoMoviedb.site == 'YouTube' && videoMoviedb.type == 'Trailer' ) {
+        final video = VideoMapper.videoMovieDBToEntity(videoMoviedb);
+        videos.add(video);
+      }
+    }
+
+    return videos;
+  }
 }

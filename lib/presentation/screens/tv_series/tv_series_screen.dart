@@ -272,7 +272,7 @@ class _CustomSliverAppBarState extends ConsumerState<_CustomSliverAppBar> {
                 ? const Icon(Icons.favorite_rounded, color: Colors.red)
                 : const Icon(Icons.favorite_border),
             error: (_, __) => const Icon(Icons.error, color: Colors.red),
-            loading: () => const CircularProgressIndicator(strokeWidth: 2),
+            loading: () => const CircularProgressIndicator(strokeWidth: 5),
           ),
         ),
       ],

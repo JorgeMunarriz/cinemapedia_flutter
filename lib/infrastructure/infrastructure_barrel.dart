@@ -5,6 +5,7 @@ export 'datasources/tv_series_movidb_datasource.dart';
 export 'mappers/actor_maper.dart';
 export 'mappers/movie_mapper.dart';
 export 'mappers/tv_series_maper.dart';
+export 'mappers/video_mapper.dart';
 export 'models/models_barrel.dart';
 export 'repositories/actor_repository_impl.dart';
 export 'repositories/local_storage_repository_impl.dart';
